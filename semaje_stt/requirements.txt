@@ -1,0 +1,6 @@
+faster-whisper==1.0.3
+# faster-whisper 1.0.3 imports `requests` at load but doesn't pin it — make it explicit.
+requests>=2.31
+fastapi==0.115.0
+uvicorn==0.30.6
+python-multipart==0.0.9
