@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from . import config
 from .backends import get_backend
 
-app = FastAPI(title="Voxail Whisper STT", version="1.0.0")
+app = FastAPI(title="semaje Whisper STT", version="1.0.0")
 
 # One backend instance per process. Model loads lazily on first transcribe.
 _backend = get_backend()

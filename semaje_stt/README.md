@@ -1,6 +1,6 @@
 # Whisper STT Service
 
-Self-contained speech-to-text service for Voxail. The only component that loads a
+Self-contained speech-to-text service for semaje. The only component that loads a
 Whisper model — everything else calls its HTTP contract (`contract.md`).
 
 Two interchangeable backends, same response shape:

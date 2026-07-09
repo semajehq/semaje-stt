@@ -1,7 +1,7 @@
 # Whisper STT Service — Contract
 
 Self-contained speech-to-text service. The only thing that talks to a Whisper
-model in Voxail. Every other component (the Node server, the live transcriber)
+model in semaje. Every other component (the Node server, the live transcriber)
 calls this HTTP contract — never a backend library directly.
 
 Base URL: `WHISPER_URL` (default `http://localhost:8011`).
