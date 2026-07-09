@@ -49,6 +49,15 @@ def test_health(client):
     assert body["model"] == "fake-model"
 
 
+def test_model_registry_reports_hardware_and_active_model(client):
+    r = client.get("/models")
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["models"]) == 10
+    assert body["active"] == {"backend": "fake", "model": "fake-model"}
+    assert body["hardware"]["cpuCount"] >= 1
+
+
 def test_transcribe_returns_contract_shape(client):
     r = client.post("/transcribe", files=_audio(), data={"language": "en"})
     assert r.status_code == 200

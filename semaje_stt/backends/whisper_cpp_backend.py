@@ -10,6 +10,7 @@ import tempfile
 
 from .base import Backend, TranscriptResult, Segment
 from .. import config
+from ..models import model_path
 
 
 def parse_whisper_cpp_json(data: dict, model_name: str) -> TranscriptResult:
@@ -43,10 +44,12 @@ def parse_whisper_cpp_json(data: dict, model_name: str) -> TranscriptResult:
 class WhisperCppBackend(Backend):
     name = "whisper.cpp"
 
-    def __init__(self):
+    def __init__(self, model_name=None):
         self.bin = config.WHISPER_CPP_BIN
-        self.model_path = config.WHISPER_CPP_MODEL
-        self.model = os.path.basename(self.model_path)
+        self.model_name = model_name or config.MODEL
+        managed_path = model_path(self.name, self.model_name)
+        self.model_path = str(managed_path if managed_path.exists() else config.WHISPER_CPP_MODEL)
+        self.model = self.model_name
 
     def load(self) -> None:
         if not os.path.exists(self.bin):

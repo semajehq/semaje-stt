@@ -15,6 +15,39 @@ export async function whisperHealth(): Promise<{ ok: boolean; backend?: string; 
   }
 }
 
+async function whisperJson(path: string, init?: RequestInit): Promise<any> {
+  const res = await fetch(`${WHISPER_URL()}${path}`, {
+    ...init,
+    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+    signal: AbortSignal.timeout(30 * 60 * 1000),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || `Whisper service error ${res.status}`)
+  return data
+}
+
+export async function whisperModels() {
+  return whisperJson('/models')
+}
+
+export async function whisperDownloadModel(backend: string, model: string) {
+  return whisperJson('/models/download', {
+    method: 'POST', body: JSON.stringify({ backend, model }),
+  })
+}
+
+export async function whisperActivateModel(backend: string, model: string) {
+  return whisperJson('/models/activate', {
+    method: 'POST', body: JSON.stringify({ backend, model }),
+  })
+}
+
+export async function whisperDeleteModel(backend: string, model: string) {
+  return whisperJson(`/models/${encodeURIComponent(backend)}/${encodeURIComponent(model)}`, {
+    method: 'DELETE',
+  })
+}
+
 export async function whisperTranscribe(
   audio: Buffer, filename: string, mimeType: string,
   opts: { language?: string; task?: 'transcribe' | 'translate' } = {},

@@ -3,15 +3,16 @@ from .. import config
 from .base import Backend, TranscriptResult, Segment
 
 
-def get_backend() -> Backend:
-    if config.BACKEND == "whisper.cpp":
+def get_backend(name=None, model=None) -> Backend:
+    backend = name or config.BACKEND
+    if backend == "whisper.cpp":
         from .whisper_cpp_backend import WhisperCppBackend
-        return WhisperCppBackend()
-    if config.BACKEND == "faster-whisper":
+        return WhisperCppBackend(model)
+    if backend == "faster-whisper":
         from .faster_whisper_backend import FasterWhisperBackend
-        return FasterWhisperBackend()
+        return FasterWhisperBackend(model)
     raise ValueError(
-        f"Unknown WHISPER_BACKEND={config.BACKEND!r}. Use 'faster-whisper' or 'whisper.cpp'."
+        f"Unknown WHISPER_BACKEND={backend!r}. Use 'faster-whisper' or 'whisper.cpp'."
     )
 
 

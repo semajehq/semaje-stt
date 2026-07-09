@@ -1,22 +1,27 @@
 """faster-whisper backend — CTranslate2, pure Python, no torch."""
 from .base import Backend, TranscriptResult, Segment
 from .. import config
+from ..models import download_model, model_path, is_installed
 
 
 class FasterWhisperBackend(Backend):
     name = "faster-whisper"
 
-    def __init__(self):
-        self.model_name = config.MODEL
-        self.model = config.MODEL
+    def __init__(self, model_name=None):
+        self.model_name = model_name or config.MODEL
+        self.model = self.model_name
         self._model = None
 
     def load(self) -> None:
         if self._model is not None:
             return
         from faster_whisper import WhisperModel  # imported lazily so gate tests don't need it
+        if not is_installed(self.name, self.model_name):
+            download_model(self.name, self.model_name)
+        source = str(model_path(self.name, self.model_name)) \
+            if is_installed(self.name, self.model_name) else self.model_name
         self._model = WhisperModel(
-            self.model_name,
+            source,
             device=config.DEVICE,
             compute_type=config.COMPUTE_TYPE,
         )
