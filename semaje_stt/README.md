@@ -49,3 +49,13 @@ JSON with segment timestamps. `GET /health`. Full spec in `contract.md`.
 ```
 
 Run the eval from the project root so the `services.whisper` package resolves.
+
+## Optional local speaker diarization
+
+```bash
+.venv/bin/pip install -r requirements-diarization.txt
+export PYANNOTE_MODEL=pyannote/speaker-diarization-3.1
+```
+
+The model runs locally after it is cached. `HF_TOKEN` is only needed when the
+selected model license requires an authenticated first download.

@@ -50,12 +50,13 @@ export async function whisperDeleteModel(backend: string, model: string) {
 
 export async function whisperTranscribe(
   audio: Buffer, filename: string, mimeType: string,
-  opts: { language?: string; task?: 'transcribe' | 'translate' } = {},
+  opts: { language?: string; task?: 'transcribe' | 'translate'; diarize?: boolean } = {},
 ): Promise<WhisperResult> {
   const form = new FormData()
   form.append('audio', new Blob([new Uint8Array(audio)], { type: mimeType || 'audio/mpeg' }), filename)
   if (opts.language) form.append('language', opts.language)
   form.append('task', opts.task || 'transcribe')
+  if (opts.diarize) form.append('diarize', 'true')
 
   let res: Response
   try {

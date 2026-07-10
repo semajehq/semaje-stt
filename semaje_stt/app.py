@@ -13,6 +13,7 @@ from .models import (
     active_config, delete_model, download_model, hardware_info, list_models,
     model_exists, save_active,
 )
+from .diarization import diarize_segments
 
 app = FastAPI(title="semaje Whisper STT", version="1.0.0")
 
@@ -86,6 +87,7 @@ async def transcribe(
     audio: UploadFile = File(...),
     language: str = Form(""),
     task: str = Form("transcribe"),
+    diarize: bool = Form(False),
 ):
     if task not in ("transcribe", "translate"):
         return JSONResponse({"error": f"invalid task: {task}"}, status_code=400)
@@ -100,6 +102,11 @@ async def transcribe(
         with _backend_lock:
             backend = _backend
         result = backend.transcribe(tmp_path, language.strip() or None, task)
+        if diarize:
+            result.segments, diarization_backend = diarize_segments(tmp_path, result.segments)
+            payload = result.to_dict()
+            payload["diarizationBackend"] = diarization_backend
+            return payload
         return result.to_dict()
     except Exception as e:  # noqa: BLE001 — surface a clean error to the caller
         return JSONResponse({"error": str(e)}, status_code=500)

@@ -7,6 +7,9 @@ class Segment:
     start: float
     end: float
     text: str
+    speaker: str | None = None
+    confidence: float | None = None
+    words: list = field(default_factory=list)
 
 
 @dataclass
@@ -20,7 +23,17 @@ class TranscriptResult:
 
     def to_dict(self) -> dict:
         d = asdict(self)
-        d["segments"] = [asdict(s) if not isinstance(s, dict) else s for s in self.segments]
+        segments = []
+        for segment in self.segments:
+            item = asdict(segment) if not isinstance(segment, dict) else dict(segment)
+            if item.get("speaker") is None:
+                item.pop("speaker", None)
+            if item.get("confidence") is None:
+                item.pop("confidence", None)
+            if not item.get("words"):
+                item.pop("words", None)
+            segments.append(item)
+        d["segments"] = segments
         return d
 
 

@@ -1,4 +1,5 @@
 """faster-whisper backend — CTranslate2, pure Python, no torch."""
+import math
 from .base import Backend, TranscriptResult, Segment
 from .. import config
 from ..models import download_model, model_path, is_installed
@@ -34,12 +35,26 @@ class FasterWhisperBackend(Backend):
             language=language or None,
             task=task,
             vad_filter=True,  # skip long silences, cuts hallucinated filler
+            word_timestamps=True,
         )
         segments = []
         parts = []
         for s in segments_iter:
             txt = s.text.strip()
-            segments.append(Segment(start=round(s.start, 3), end=round(s.end, 3), text=txt))
+            confidence = max(0.0, min(1.0, math.exp(float(s.avg_logprob or -10))))
+            words = [
+                {
+                    "start": round(float(w.start or 0), 3),
+                    "end": round(float(w.end or 0), 3),
+                    "word": w.word,
+                    "probability": round(float(w.probability or 0), 4),
+                }
+                for w in (s.words or [])
+            ]
+            segments.append(Segment(
+                start=round(s.start, 3), end=round(s.end, 3), text=txt,
+                confidence=round(confidence, 4), words=words,
+            ))
             parts.append(txt)
 
         return TranscriptResult(

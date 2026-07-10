@@ -29,6 +29,7 @@ Base URL: `WHISPER_URL` (default `http://localhost:8011`).
 | `audio`    | file   | yes      | any ffmpeg-decodable audio/video container                   |
 | `language` | string | no       | ISO code (`en`, `fr`, …). Omit to auto-detect.               |
 | `task`     | string | no       | `transcribe` (default) or `translate` (→ English, Whisper)   |
+| `diarize`  | bool   | no       | run the optional local speaker-diarization pipeline          |
 
 Response `200`:
 
@@ -58,3 +59,8 @@ Selected by `WHISPER_BACKEND`:
 - `whisper.cpp` — shells out to the compiled `whisper-cli` binary (Metal on Apple Silicon).
 
 Both return the identical response shape. Callers never know or care which ran.
+
+Segments may include `speaker`, confidence in the `0..1` range, and word-level
+`{start,end,word,probability}` entries. With `diarize=true`, pyannote runs
+locally when installed; otherwise the response explicitly uses the
+`single-speaker-fallback` backend.
