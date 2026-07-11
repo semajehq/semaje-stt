@@ -9,6 +9,7 @@ Usage:
     WHISPER_BACKEND=whisper.cpp services/whisper/.venv/bin/python -m services.whisper.evals.eval_transcription
 """
 import os
+import json
 import subprocess
 import sys
 import tempfile
@@ -70,6 +71,14 @@ def main() -> int:
     worst = max(results)
     print(f"\navg WER={avg:.3f}  worst={worst:.3f}  threshold={WER_THRESHOLD}")
     ok = worst <= WER_THRESHOLD
+    report_path = os.getenv("EVAL_REPORT_PATH", "data/observability/whisper-eval.json")
+    os.makedirs(os.path.dirname(report_path) or ".", exist_ok=True)
+    with open(report_path, "w", encoding="utf-8") as report:
+        json.dump({
+            "backend": backend.name, "model": backend.model, "average": avg,
+            "worst": worst, "threshold": WER_THRESHOLD, "passed": ok,
+            "cases": len(results),
+        }, report, indent=2)
     print("EVAL PASS" if ok else "EVAL FAIL")
     return 0 if ok else 1
 
