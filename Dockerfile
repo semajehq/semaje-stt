@@ -19,16 +19,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
 COPY requirements*.txt ./
+# One resolution per build so /wheels is always a consistent set.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip wheel -w /wheels -r requirements.txt \
-  && if [ "$OMNILINGUAL" = "1" ] && [ "$TARGETARCH" = "amd64" ]; then \
+    if [ "$OMNILINGUAL" = "1" ] && [ "$TARGETARCH" = "amd64" ]; then \
        pip wheel -w /wheels \
          --extra-index-url https://download.pytorch.org/whl/cpu \
          --extra-index-url https://fair.pkg.atmeta.com/fairseq2/whl/pt2.8.0/cpu \
          -r requirements.txt -r requirements-omnilingual.txt; \
-     elif [ "$OMNILINGUAL" = "1" ]; then \
-       echo "WARNING: Omnilingual ASR has no prebuilt Linux wheels for $TARGETARCH; building Whisper-only." \
-            "Build with --platform linux/amd64, or run ./setup.sh natively (Apple Silicon is supported natively)."; \
+     else \
+       if [ "$OMNILINGUAL" = "1" ]; then \
+         echo "WARNING: Omnilingual ASR has no prebuilt Linux wheels for $TARGETARCH; building Whisper-only." \
+              "Build with --platform linux/amd64, or run ./setup.sh natively (Apple Silicon is supported natively)."; \
+       fi; \
+       pip wheel -w /wheels -r requirements.txt; \
      fi
 
 FROM ${PYTHON_IMAGE}
