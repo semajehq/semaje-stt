@@ -207,6 +207,19 @@ def test_omnilingual_missing_degrades_gracefully(client):
     assert r.json()["code"] == "unknown_language"
 
 
+def test_broken_omnilingual_runtime_is_disabled_at_warmup(client):
+    class BrokenOmni(FakeOmni):
+        def load(self):
+            raise OSError("fairseq2 requires libsndfile")
+
+    stt_app.hub.omnilingual = BrokenOmni()
+    stt_app._warmup()
+    assert stt_app.hub.omnilingual is None
+    assert client.get("/health").json()["engines"]["omnilingual"] is None
+    body = client.post("/transcribe", files=_audio(), data={"language": "sw"}).json()
+    assert body["engine"] == "whisper"  # degraded, not a 500
+
+
 def test_languages_endpoint_filters(client):
     body = client.get("/languages").json()
     assert body["total"] >= 1600

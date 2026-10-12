@@ -85,6 +85,13 @@ class EngineHub:
             raise RuntimeError(f"The {family} engine is not available on this host.")
         return engine
 
+    def disable(self, family: str) -> None:
+        with self.lock:
+            if family == "omnilingual":
+                self.omnilingual = None
+            else:
+                self.whisper = None
+
     def swap(self, engine: Engine) -> None:
         with self.lock:
             if engine.family == "omnilingual":
@@ -117,7 +124,14 @@ def _warmup() -> None:
         try:
             hub.get(family).load()
             _log(logging.INFO, "warmup.done", engine=family, seconds=round(time.perf_counter() - started, 1))
-        except Exception as exc:  # noqa: BLE001 — warmup is best effort; the request path retries
+        except (ImportError, OSError) as exc:
+            # A broken runtime install (e.g. missing libsndfile) will never load: take the
+            # engine out of routing so requests degrade to the other engine instead of 500ing.
+            if family == "omnilingual":
+                hub.disable("omnilingual")
+            _log(logging.ERROR, "warmup.engine_disabled" if family == "omnilingual" else "warmup.failed",
+                 engine=family, error=str(exc))
+        except Exception as exc:  # noqa: BLE001 — transient (network, disk): the request path retries
             _log(logging.WARNING, "warmup.failed", engine=family, error=str(exc))
 
 
