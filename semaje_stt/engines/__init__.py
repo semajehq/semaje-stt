@@ -12,7 +12,10 @@ def get_engine(name: str, model: str | None = None) -> Engine:
     if name == "omnilingual":
         from .omnilingual_engine import OmnilingualEngine
         return OmnilingualEngine(model)
-    raise ValueError(f"Unknown STT engine {name!r}. Use faster-whisper, whisper.cpp, or omnilingual.")
+    if name == "mms":
+        from .mms_engine import MmsEngine
+        return MmsEngine(model)
+    raise ValueError(f"Unknown STT engine {name!r}. Use faster-whisper, whisper.cpp, omnilingual, or mms.")
 
 
 __all__ = ["get_engine", "Engine", "TranscriptResult", "Segment", "AudioInput"]

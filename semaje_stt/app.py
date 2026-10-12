@@ -29,7 +29,7 @@ from .models import (
     WHISPER_BACKENDS, ENGINES, active_config, delete_model, download_model, hardware_info,
     list_models, model_exists, omnilingual_available, save_active,
 )
-from .router import UnknownLanguage, registry, route, whisper_strong
+from .router import Decision, UnknownLanguage, prefer_mms, registry, route, whisper_strong
 
 VERSION = "2.0.0"
 
@@ -63,6 +63,11 @@ def _log(level: int, msg: str, **fields) -> None:
 
 
 # ── Engine hub ───────────────────────────────────────────────────
+def mms_runtime_available() -> bool:
+    import importlib.util
+    return importlib.util.find_spec("transformers") is not None and importlib.util.find_spec("torch") is not None
+
+
 class EngineHub:
     """Holds one engine per family; swaps are atomic under a lock."""
 
@@ -73,6 +78,9 @@ class EngineHub:
         self.omnilingual: Engine | None = None
         if config.OMNILINGUAL_ENABLED and omnilingual_available():
             self.omnilingual = get_engine("omnilingual", active["omnilingual"]["model"])
+        self.mms: Engine | None = None
+        if config.ALLOW_NONCOMMERCIAL and mms_runtime_available():
+            self.mms = get_engine("mms")
 
     def available(self) -> set[str]:
         with self.lock:
@@ -80,7 +88,7 @@ class EngineHub:
 
     def get(self, family: str) -> Engine:
         with self.lock:
-            engine = self.whisper if family == "whisper" else self.omnilingual
+            engine = {"whisper": self.whisper, "omnilingual": self.omnilingual, "mms": self.mms}.get(family)
         if engine is None:
             raise RuntimeError(f"The {family} engine is not available on this host.")
         return engine
@@ -102,6 +110,8 @@ class EngineHub:
     def describe(self) -> dict:
         with self.lock:
             engines = {"whisper": self.whisper, "omnilingual": self.omnilingual}
+            if config.ALLOW_NONCOMMERCIAL:
+                engines["mms"] = self.mms
         return {
             family: (
                 {"backend": eng.name, "model": eng.model, "ready": eng.ready} if eng else None
@@ -119,7 +129,7 @@ def _warmup() -> None:
     """Load (and if needed download) every engine before traffic arrives, so no
     request ever blocks on a multi-GB model download. /health/ready stays false
     until at least one engine is loaded."""
-    for family in sorted(hub.available()):
+    for family in sorted(hub.available()) + (["mms"] if hub.mms is not None else []):
         started = time.perf_counter()
         try:
             hub.get(family).load()
@@ -345,7 +355,13 @@ def _transcribe_blocking(src: str, workdir: str, language: str, task: str, diari
         timings["detectMs"] = round((time.perf_counter() - t1) * 1000, 1)
 
     decision = route(lang, policy, available, detected=detected, task=task, strong=whisper_strong())
-    engine = hub.get(decision.engine)
+    target = lang or (registry().get(decision.canonical) if decision.canonical else None)
+    if prefer_mms(decision, target, config.ALLOW_NONCOMMERCIAL, config.MMS_LANGUAGES, hub.mms is not None):
+        engine = hub.get("mms")
+        decision = Decision("mms", target.iso3, target.code,
+                                  f"{target.name}: MMS-1b-all measured better (non-commercial opt-in)")
+    else:
+        engine = hub.get(decision.engine)
 
     t2 = time.perf_counter()
     if audio.duration == 0:

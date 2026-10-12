@@ -50,6 +50,14 @@ OMNILINGUAL_BATCH = _int("STT_OMNILINGUAL_BATCH", 4)
 # CTC/LLM model cards reject inputs >= 40s; chunk well below that.
 OMNILINGUAL_MAX_CHUNK_SEC = float(_env("STT_OMNILINGUAL_MAX_CHUNK_SEC", "30"))
 
+# ── MMS-1b-all (opt-in; weights CC-BY-NC-4.0) ────────────────────
+# Off unless an operator accepts the non-commercial license. When on, it serves
+# only STT_MMS_LANGUAGES (ISO 639-3), where it measured better than Omnilingual.
+ALLOW_NONCOMMERCIAL = _bool("STT_ALLOW_NONCOMMERCIAL", False)
+MMS_MODEL = _env("STT_MMS_MODEL", "facebook/mms-1b-all")
+MMS_LANGUAGES = frozenset(c.strip() for c in _env("STT_MMS_LANGUAGES", "kik,luo").split(",") if c.strip())
+MMS_CACHE = _env("STT_MMS_CACHE", "")
+
 # ── Routing ──────────────────────────────────────────────────────
 # auto        → strong Whisper languages go to Whisper, everything else to Omnilingual
 # whisper     → always Whisper

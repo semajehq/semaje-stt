@@ -1,0 +1,3 @@
+# Optional: Meta MMS-1b-all (CC-BY-NC-4.0). Used only with STT_ALLOW_NONCOMMERCIAL=true
+# for STT_MMS_LANGUAGES (default kik,luo). torch comes with requirements-omnilingual.txt.
+transformers>=4.44,<5

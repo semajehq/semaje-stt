@@ -1,0 +1,11 @@
+{
+  "_comment": "Max CER per WAXAL language and run label (fair set: misaligned rows and the non-verbatim Kikuyu speaker excluded, 40 clips). Baseline 2026-10-12 on an M4 CPU; margins cover small-sample variance.",
+  "kik": {
+    "omni-ctc-300m": 0.26,
+    "mms-1b-all": 0.24
+  },
+  "luo": {
+    "omni-ctc-300m": 0.14,
+    "mms-1b-all": 0.13
+  }
+}

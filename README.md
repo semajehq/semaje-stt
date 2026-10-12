@@ -46,6 +46,35 @@ Languages come from [semaje-languages](https://github.com/semajehq/semaje-langua
 All runs faster than real time (RTF 0.09–0.25). Larger models (`omniASR_LLM_1B_v2`,
 `large-v3-turbo`) cut error further on GPU.
 
+## Kikuyu and Dholuo
+
+Measured on Google WAXAL test recordings (8 speakers per language; rows whose
+audio does not match the script excluded, including one Kikuyu speaker who
+paraphrases instead of reading), identical 40 clips per engine:
+
+| Language | Omnilingual CTC-300M (default) | MMS-1b-all + adapter (opt-in) |
+|---|---|---|
+| Kikuyu | CER 21.4%, WER 86.1% | **CER 19.1%, WER 57.1%** |
+| Dholuo | CER 10.7%, WER 47.6% | **CER 10.0%, WER 37.3%** |
+
+On a larger 100-clip Dholuo sample the two are even on characters (Omnilingual
+10.4%, MMS 11.4% CER) while MMS stays ahead on words (WER 41.0% vs 48.1%).
+
+MMS-1b-all (the ASR C-elo Labs uses for Kikuyu) wins on words because its
+language adapter keeps output inside the language's orthography; Omnilingual's
+language-agnostic CTC model sometimes writes `ä`/`å` for Kikuyu `ĩ`/`ũ`. Its
+weights are CC-BY-NC-4.0, so it is off by default:
+
+```bash
+pip install -r requirements-mms.txt
+STT_ALLOW_NONCOMMERCIAL=true STT_MMS_LANGUAGES=kik,luo make run
+make eval-waxal ARGS="--langs kik,luo --n 40"
+```
+
+With the opt-in, requests for `STT_MMS_LANGUAGES` route to MMS (response
+`engine: "mms"`, reason in `routing`); everything else is unchanged. MMS is a
+1B-parameter model: about 6 s per 10 s clip on a laptop CPU, real time on a GPU.
+
 ## Gotchas
 
 - `omnilingual-asr==0.2.0` pins `torch==2.8.0` but not `torchaudio`/`pyarrow`; the

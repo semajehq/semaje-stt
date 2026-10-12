@@ -38,6 +38,14 @@ class Decision:
         return asdict(self)
 
 
+def prefer_mms(decision: Decision, language: Language | None, allowed: bool,
+               mms_languages: frozenset, mms_available: bool) -> bool:
+    """Swap the low-resource engine to MMS-1b-all for languages where it measured
+    better, only when an operator allowed non-commercial weights."""
+    return (allowed and mms_available and decision.engine == "omnilingual"
+            and language is not None and language.iso3 in mms_languages)
+
+
 def whisper_strong() -> frozenset:
     override = os.getenv("STT_WHISPER_STRONG", "").strip()
     if override:

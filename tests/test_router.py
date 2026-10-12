@@ -123,3 +123,30 @@ def test_strong_set_override(monkeypatch):
 def test_every_strong_language_is_a_real_whisper_code():
     whisper_codes = {l.whisper for l in R.languages if l.whisper}
     assert DEFAULT_WHISPER_STRONG <= whisper_codes
+
+
+# ── MMS-1b-all opt-in swap (non-commercial, measured-better languages only) ──
+from semaje_stt.router import prefer_mms
+
+MMS_LANGS = frozenset({"kik", "luo"})
+
+
+def test_mms_used_for_measured_languages_when_allowed():
+    d = route(lang("kik"), "auto", BOTH)
+    assert prefer_mms(d, lang("kik"), allowed=True, mms_languages=MMS_LANGS, mms_available=True)
+
+
+def test_mms_never_used_without_noncommercial_opt_in():
+    d = route(lang("kik"), "auto", BOTH)
+    assert not prefer_mms(d, lang("kik"), allowed=False, mms_languages=MMS_LANGS, mms_available=True)
+
+
+def test_mms_not_used_for_unmeasured_languages_or_whisper_routes():
+    assert not prefer_mms(route(lang("yo"), "auto", BOTH), lang("yo"), True, MMS_LANGS, True)
+    assert not prefer_mms(route(lang("fr"), "auto", BOTH), lang("fr"), True, MMS_LANGS, True)
+
+
+def test_mms_not_used_when_runtime_missing_or_no_language():
+    d = route(lang("luo"), "auto", BOTH)
+    assert not prefer_mms(d, lang("luo"), True, MMS_LANGS, mms_available=False)
+    assert not prefer_mms(route(None, "auto", BOTH), None, True, MMS_LANGS, True)

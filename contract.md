@@ -15,6 +15,7 @@ if the caller sent one).
 |---|---|---|---|---|
 | `whisper` | faster-whisper (default) or whisper.cpp | MIT | 99 | word timestamps, confidence, translate→English |
 | `omnilingual` | Meta Omnilingual ASR (fairseq2) | Apache-2.0 | 1,672 | low-resource coverage; segment-level timestamps |
+| `mms` (opt-in) | Meta MMS-1b-all + language adapters | **CC-BY-NC-4.0** | `STT_MMS_LANGUAGES` (default kik, luo) | only with `STT_ALLOW_NONCOMMERCIAL=true`; replaces Omnilingual for those languages where it measured better |
 
 **Routing** (`router.route`, pure): with `engine=auto` a language Whisper handles
 well (`STT_WHISPER_STRONG`, default ≤15% FLEURS WER list) goes to Whisper;

@@ -251,3 +251,41 @@ def test_metrics_exposed(client):
     text = client.get("/metrics").text
     assert "semaje_stt_audio_seconds_total" in text
     assert 'semaje_stt_http_requests_total{method="POST",path="/transcribe"' in text
+
+
+class FakeMms(FakeOmni):
+    name = "mms-1b-all"
+    family = "mms"
+    model = "mms-1b-all"
+
+    def transcribe(self, audio, language, task):
+        return TranscriptResult(text="ũhoro waku", language=language, duration=audio.duration,
+                                segments=[Segment(0.0, audio.duration, "ũhoro waku")], backend=self.name, model=self.model)
+
+
+def test_mms_serves_kikuyu_only_with_noncommercial_opt_in(client, monkeypatch):
+    stt_app.hub.mms = FakeMms()
+    monkeypatch.setattr(config, "ALLOW_NONCOMMERCIAL", False)
+    assert client.post("/transcribe", files=_audio(), data={"language": "kik"}).json()["engine"] == "omnilingual"
+    monkeypatch.setattr(config, "ALLOW_NONCOMMERCIAL", True)
+    body = client.post("/transcribe", files=_audio(), data={"language": "kik"}).json()
+    assert (body["engine"], body["engineLanguage"], body["languageCode"]) == ("mms", "kik", "kik_Latn")
+    assert "non-commercial" in body["routing"]["reason"]
+    # Languages MMS was not measured better on stay on Omnilingual.
+    assert client.post("/transcribe", files=_audio(), data={"language": "yo"}).json()["engine"] == "omnilingual"
+    stt_app.hub.mms = None
+
+
+def test_app_imports_with_noncommercial_opt_in(tmp_path):
+    """Regression: with STT_ALLOW_NONCOMMERCIAL=true the hub builds MMS while the
+    module is still importing; a helper defined below that point crashed startup."""
+    import os
+    import subprocess
+    import sys
+    env = {**os.environ, "STT_ALLOW_NONCOMMERCIAL": "true", "STT_OMNILINGUAL_ENABLED": "false",
+           "STT_MODEL_DIR": str(tmp_path)}
+    code = ("import semaje_stt.app as a; "
+            "print('mms' in a.hub.describe(), a.hub.mms is not None or not a.mms_runtime_available())")
+    out = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True, timeout=120)
+    assert out.returncode == 0, out.stderr[-2000:]
+    assert out.stdout.split() == ["True", "True"]

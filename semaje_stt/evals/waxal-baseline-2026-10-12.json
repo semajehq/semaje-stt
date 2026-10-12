@@ -1,0 +1,57 @@
+{
+  "dataset": "google/WaxalNLP TTS test (fair set, 40 clips per language, identical across engines)",
+  "results": [
+    {
+      "lang": "kik",
+      "run": "omni-ctc-300m",
+      "servedBy": "omnilingual:omniASR_CTC_300M_v2",
+      "clips": 40,
+      "misalignedDropped": 58,
+      "wer": 0.861,
+      "cer": 0.2141,
+      "worstSpeakerCer": 0.3152,
+      "secondsPerClip": 1.84,
+      "thresholdCer": null,
+      "passed": true
+    },
+    {
+      "lang": "luo",
+      "run": "omni-ctc-300m",
+      "servedBy": "omnilingual:omniASR_CTC_300M_v2",
+      "clips": 40,
+      "misalignedDropped": 27,
+      "wer": 0.4762,
+      "cer": 0.1073,
+      "worstSpeakerCer": 0.1693,
+      "secondsPerClip": 1.09,
+      "thresholdCer": null,
+      "passed": true
+    },
+    {
+      "lang": "kik",
+      "run": "mms-1b-all",
+      "servedBy": "mms:mms-1b-all",
+      "clips": 40,
+      "misalignedDropped": 58,
+      "wer": 0.5713,
+      "cer": 0.1906,
+      "worstSpeakerCer": 0.263,
+      "secondsPerClip": 6.33,
+      "thresholdCer": null,
+      "passed": true
+    },
+    {
+      "lang": "luo",
+      "run": "mms-1b-all",
+      "servedBy": "mms:mms-1b-all",
+      "clips": 40,
+      "misalignedDropped": 27,
+      "wer": 0.3726,
+      "cer": 0.0997,
+      "worstSpeakerCer": 0.1972,
+      "secondsPerClip": 1.51,
+      "thresholdCer": 0.13,
+      "passed": true
+    }
+  ]
+}
