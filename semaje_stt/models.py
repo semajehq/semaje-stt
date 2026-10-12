@@ -45,19 +45,22 @@ FASTER_WHISPER_REPOS = {
 }
 
 # Omnilingual ASR model cards. CTC models are fastest and need no language hint;
-# LLM models accept an optional language code and are more accurate.
+# LLM models accept an optional language code and are more accurate. The size in
+# the name is the speech encoder only: LLM cards add a >1B-parameter decoder.
+# diskMb = measured checkpoint size; ramMb = peak while loading in float32 on CPU
+# (~1.5-2x the checkpoint); vramMb = bfloat16 on GPU.
 OMNILINGUAL_MODELS = [
-    {"id": "omniASR_CTC_300M_v2", "label": "Omnilingual CTC 300M", "diskMb": 1300, "ramMb": 3000, "vramMb": 2000,
+    {"id": "omniASR_CTC_300M_v2", "label": "Omnilingual CTC 300M", "diskMb": 1304, "ramMb": 2500, "vramMb": 1500,
      "speed": "fast", "accuracy": "good"},
-    {"id": "omniASR_CTC_1B_v2", "label": "Omnilingual CTC 1B", "diskMb": 4000, "ramMb": 7000, "vramMb": 4000,
+    {"id": "omniASR_CTC_1B_v2", "label": "Omnilingual CTC 1B", "diskMb": 3902, "ramMb": 6000, "vramMb": 3000,
      "speed": "balanced", "accuracy": "better"},
-    {"id": "omniASR_LLM_300M_v2", "label": "Omnilingual LLM 300M", "diskMb": 1800, "ramMb": 4000, "vramMb": 3000,
+    {"id": "omniASR_LLM_300M_v2", "label": "Omnilingual LLM 300M", "diskMb": 6526, "ramMb": 10000, "vramMb": 5000,
      "speed": "balanced", "accuracy": "better"},
-    {"id": "omniASR_LLM_1B_v2", "label": "Omnilingual LLM 1B", "diskMb": 5000, "ramMb": 9000, "vramMb": 6000,
+    {"id": "omniASR_LLM_1B_v2", "label": "Omnilingual LLM 1B", "diskMb": 9118, "ramMb": 13000, "vramMb": 7000,
      "speed": "slow", "accuracy": "high"},
-    {"id": "omniASR_LLM_3B_v2", "label": "Omnilingual LLM 3B", "diskMb": 12000, "ramMb": 20000, "vramMb": 10000,
+    {"id": "omniASR_LLM_3B_v2", "label": "Omnilingual LLM 3B", "diskMb": 17522, "ramMb": 24000, "vramMb": 12000,
      "speed": "slow", "accuracy": "very high"},
-    {"id": "omniASR_LLM_7B_v2", "label": "Omnilingual LLM 7B", "diskMb": 30000, "ramMb": 40000, "vramMb": 17000,
+    {"id": "omniASR_LLM_7B_v2", "label": "Omnilingual LLM 7B", "diskMb": 31220, "ramMb": 42000, "vramMb": 20000,
      "speed": "slowest", "accuracy": "highest"},
 ]
 

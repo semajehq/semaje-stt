@@ -8,11 +8,23 @@ timings or confidences, so segments carry neither.
 from __future__ import annotations
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 from .base import Engine, TranscriptResult, Segment, AudioInput
 from .. import config
 from ..audio import split_on_silence
 from ..models import MODEL_ROOT, omnilingual_marker
+
+
+# fairseq2 keeps per-thread state (its "gangs"). A model loaded on one thread
+# fails on another with "_thread._local has no attribute current_gangs", which
+# broke switching Omnilingual models from the API (requests run on a worker
+# pool). Every fairseq2 call therefore runs on this one dedicated thread.
+_FAIRSEQ2_THREAD = ThreadPoolExecutor(max_workers=1, thread_name_prefix="fairseq2")
+
+
+def on_fairseq2_thread(fn, *args, **kwargs):
+    return _FAIRSEQ2_THREAD.submit(fn, *args, **kwargs).result()
 
 
 def assemble_segments(chunks: list[tuple[int, int]], texts: list[str], sample_rate: int) -> list[Segment]:
@@ -55,6 +67,10 @@ class OmnilingualEngine(Engine):
         return "_CTC_" in self.model_name
 
     def load(self) -> None:
+        if self._pipeline is None:
+            on_fairseq2_thread(self._load)
+
+    def _load(self) -> None:
         if self._pipeline is not None:
             return
         cache = MODEL_ROOT / "omnilingual"
@@ -64,8 +80,12 @@ class OmnilingualEngine(Engine):
         import torch
 
         device = _resolve_device(config.OMNILINGUAL_DEVICE)
-        # The pipeline defaults to bfloat16, which is slow or unsupported on CPU.
-        dtype = torch.float32 if device == "cpu" else torch.bfloat16
+        # The pipeline defaults to bfloat16, which is slow on CPU; float32 there
+        # unless the operator trades speed for memory (STT_OMNILINGUAL_DTYPE).
+        choice = config.OMNILINGUAL_DTYPE
+        if choice == "auto":
+            choice = "float32" if device == "cpu" else "bfloat16"
+        dtype = {"float32": torch.float32, "bfloat16": torch.bfloat16}[choice]
         self._pipeline = ASRInferencePipeline(model_card=self.model_name, device=device, dtype=dtype)
         omnilingual_marker(self.model_name).touch()
         self.ready = True
@@ -79,7 +99,7 @@ class OmnilingualEngine(Engine):
             # CTC models are language-agnostic; LLM models accept an optional hint.
             if language and not self.is_ctc:
                 kwargs["lang"] = [language] * len(batch)
-            out.extend(str(t) for t in self._pipeline.transcribe(batch, **kwargs))
+            out.extend(str(t) for t in on_fairseq2_thread(self._pipeline.transcribe, batch, **kwargs))
         return out
 
     def transcribe(self, audio: AudioInput, language, task) -> TranscriptResult:

@@ -82,3 +82,27 @@ def test_translate_is_rejected(monkeypatch):
     engine = _engine("omniASR_CTC_300M_v2", monkeypatch)
     with pytest.raises(ValueError, match="only supports task=transcribe"):
         engine.transcribe(_speech(3), None, "translate")
+
+
+def test_all_fairseq2_calls_run_on_one_thread(monkeypatch):
+    """Regression: fairseq2 state is thread-local; loads and inference must share a thread."""
+    import threading
+    from semaje_stt.engines import omnilingual_engine as oe
+    seen = []
+
+    class ThreadRecordingPipeline(FakePipeline):
+        def transcribe(self, batch, **kwargs):
+            seen.append(threading.current_thread().name)
+            return super().transcribe(batch, **kwargs)
+
+    engine = _engine("omniASR_CTC_300M_v2", monkeypatch)
+    engine._pipeline = None
+    monkeypatch.setattr(engine, "_load", lambda: (seen.append(threading.current_thread().name),
+                                                   setattr(engine, "_pipeline", ThreadRecordingPipeline())))
+    caller_threads = []
+    for _ in range(3):  # different caller threads, like FastAPI's worker pool
+        t = threading.Thread(target=lambda: engine.transcribe(_speech(5), None, "transcribe"))
+        t.start(); t.join()
+        caller_threads.append(t.name)
+    assert len(set(seen)) == 1 and seen[0].startswith("fairseq2")
+    assert not set(caller_threads) & set(seen)

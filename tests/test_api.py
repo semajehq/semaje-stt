@@ -289,3 +289,12 @@ def test_app_imports_with_noncommercial_opt_in(tmp_path):
     out = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True, timeout=120)
     assert out.returncode == 0, out.stderr[-2000:]
     assert out.stdout.split() == ["True", "True"]
+
+
+def test_registry_sizes_match_measured_checkpoints():
+    """The LLM cards carry a >1B decoder; their footprint must not be listed like the encoder size."""
+    from semaje_stt.models import OMNILINGUAL_MODELS
+    sizes = {m["id"]: m for m in OMNILINGUAL_MODELS}
+    assert sizes["omniASR_LLM_300M_v2"]["diskMb"] > 6000
+    assert sizes["omniASR_LLM_300M_v2"]["ramMb"] >= sizes["omniASR_LLM_300M_v2"]["diskMb"]
+    assert all(m["ramMb"] >= m["diskMb"] for m in OMNILINGUAL_MODELS)

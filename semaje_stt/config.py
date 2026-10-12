@@ -47,6 +47,9 @@ OMNILINGUAL_ENABLED = _bool("STT_OMNILINGUAL_ENABLED", True)
 OMNILINGUAL_MODEL = _env("STT_OMNILINGUAL_MODEL", "omniASR_CTC_300M_v2")
 OMNILINGUAL_DEVICE = _env("STT_OMNILINGUAL_DEVICE", "auto")  # auto | cpu | cuda | mps
 OMNILINGUAL_BATCH = _int("STT_OMNILINGUAL_BATCH", 4)
+# auto: float32 on CPU (fastest there), bfloat16 on GPU. bfloat16 on CPU halves
+# memory (fits LLM cards on 16 GB machines) at some speed cost.
+OMNILINGUAL_DTYPE = _env("STT_OMNILINGUAL_DTYPE", "auto")  # auto | float32 | bfloat16
 # CTC/LLM model cards reject inputs >= 40s; chunk well below that.
 OMNILINGUAL_MAX_CHUNK_SEC = float(_env("STT_OMNILINGUAL_MAX_CHUNK_SEC", "30"))
 
