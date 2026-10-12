@@ -1,8 +1,8 @@
 """Gate tests: engine routing decisions. Pure, deterministic."""
 import pytest
 
-from packages.languages import UnknownLanguage, registry
-from services.stt.router import DEFAULT_WHISPER_STRONG, route, whisper_strong
+from semaje_languages import UnknownLanguage, registry
+from semaje_stt.router import DEFAULT_WHISPER_STRONG, route, whisper_strong
 
 BOTH = {"whisper", "omnilingual"}
 R = registry()

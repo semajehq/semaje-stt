@@ -1,5 +1,5 @@
 """Gate test: whisper.cpp JSON parser. Pure, no binary, <1ms."""
-from services.stt.engines.whisper_cpp_engine import parse_whisper_cpp_json
+from semaje_stt.engines.whisper_cpp_engine import parse_whisper_cpp_json
 
 
 def test_parses_segments_text_and_timestamps():

@@ -1,5 +1,5 @@
 """Gate tests: the eval's metric math (so a scoring bug can't fake a pass)."""
-from services.stt.evals.eval_fleurs import cer, normalize, wer
+from semaje_stt.evals.eval_fleurs import cer, normalize, wer
 
 
 def test_normalize_strips_punctuation_and_case():

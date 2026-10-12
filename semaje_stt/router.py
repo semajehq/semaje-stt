@@ -1,4 +1,4 @@
-"""Engine routing. Pure and deterministic; languages come from packages/languages.
+"""Engine routing. Pure and deterministic; languages come from semaje-languages.
 
 Two engine families, picked per request:
 
@@ -14,7 +14,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, asdict
 
-from packages.languages import Language, UnknownLanguage, registry
+from semaje_languages import Language, UnknownLanguage, registry
 
 # Languages where Whisper large-v2/v3 reaches roughly <=15% WER/CER on FLEURS
 # (Radford et al. 2022, Appendix D). Everything else Whisper "supports" is

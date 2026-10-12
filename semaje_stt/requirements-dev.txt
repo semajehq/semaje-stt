@@ -1,4 +1,0 @@
-pytest==8.3.2
-httpx==0.27.2
-langcodes>=3.4                 # packages/languages/build.py only
-language_data>=1.2

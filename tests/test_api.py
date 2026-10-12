@@ -8,9 +8,9 @@ import io
 import pytest
 from fastapi.testclient import TestClient
 
-import services.stt.app as stt_app
-from services.stt import config
-from services.stt.engines.base import Engine, Segment, TranscriptResult
+import semaje_stt.app as stt_app
+from semaje_stt import config
+from semaje_stt.engines.base import Engine, Segment, TranscriptResult
 from .conftest import make_wav, needs_ffmpeg
 
 pytestmark = needs_ffmpeg

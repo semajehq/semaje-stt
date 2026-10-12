@@ -5,9 +5,9 @@ Streams the first N test clips per language straight out of FLEURS' tar.gz
 scores WER and CER against FLEURS' normalized transcriptions. Thresholds live
 in fleurs_thresholds.json; the run fails if any language regresses past them.
 
-    services/stt/.venv/bin/python -m services.stt.evals.eval_fleurs                  # default set
-    ... -m services.stt.evals.eval_fleurs --langs sw_ke,yo_ng --n 10 --engines auto,whisper
-    STT_URL=http://gpu-box:8011 ... -m services.stt.evals.eval_fleurs
+    make eval-fleurs                                                               # default set
+    ... -m semaje_stt.evals.eval_fleurs --langs sw_ke,yo_ng --n 10 --engines auto,whisper
+    STT_URL=http://gpu-box:8011 ... -m semaje_stt.evals.eval_fleurs
 
 Writes data/observability/stt-fleurs-eval.json (published by the Signal Room).
 """

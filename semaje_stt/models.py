@@ -14,7 +14,7 @@ from urllib.request import urlretrieve
 
 from . import config
 
-DEFAULT_MODEL_ROOT = Path(__file__).resolve().parents[2] / "data" / "models"
+DEFAULT_MODEL_ROOT = Path(__file__).resolve().parents[1] / "data" / "models"
 MODEL_ROOT = Path(os.getenv("STT_MODEL_DIR", os.getenv("WHISPER_MODEL_DIR", os.getenv("HF_HOME", str(DEFAULT_MODEL_ROOT)))))
 ACTIVE_FILE = MODEL_ROOT / ".semaje-active.json"
 

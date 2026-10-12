@@ -3,7 +3,7 @@
 Fast sanity check for the Whisper engine on any Mac; the real multilingual
 eval is eval_fleurs.py. Writes data/observability/stt-eval.json.
 
-    npm run eval:stt
+    make eval
 """
 import json
 import os
@@ -11,10 +11,10 @@ import subprocess
 import sys
 import tempfile
 
-from services.stt import config
-from services.stt.audio import normalize, read_wav
-from services.stt.engines import AudioInput, get_engine
-from services.stt.evals.eval_fleurs import wer
+from semaje_stt import config
+from semaje_stt.audio import normalize, read_wav
+from semaje_stt.engines import AudioInput, get_engine
+from semaje_stt.evals.eval_fleurs import wer
 
 WER_THRESHOLD = float(os.getenv("EVAL_WER_THRESHOLD", "0.20"))
 CASES = [

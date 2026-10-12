@@ -1,4 +1,5 @@
 # semaje STT core: Whisper engine + HTTP service. Fully open source.
+semaje-languages @ https://github.com/semajehq/semaje-languages/archive/refs/tags/v1.0.0.tar.gz
 faster-whisper==1.1.1          # MIT
 # faster-whisper imports `requests` at load but doesn't pin it.
 requests>=2.31

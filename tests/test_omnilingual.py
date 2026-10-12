@@ -2,9 +2,9 @@
 import numpy as np
 import pytest
 
-from services.stt import config
-from services.stt.engines.base import AudioInput
-from services.stt.engines.omnilingual_engine import OmnilingualEngine, assemble_segments
+from semaje_stt import config
+from semaje_stt.engines.base import AudioInput
+from semaje_stt.engines.omnilingual_engine import OmnilingualEngine, assemble_segments
 
 SR = 16000
 

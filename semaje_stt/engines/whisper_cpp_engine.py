@@ -56,11 +56,11 @@ class WhisperCppEngine(Engine):
     def load(self) -> None:
         if not os.path.exists(self.bin):
             raise RuntimeError(
-                f"whisper.cpp binary not found at {self.bin}. Run services/stt/setup.sh."
+                f"whisper.cpp binary not found at {self.bin}. Run ./setup.sh."
             )
         if not os.path.exists(self.model_path):
             raise RuntimeError(
-                f"whisper.cpp model not found at {self.model_path}. Run services/stt/setup.sh."
+                f"whisper.cpp model not found at {self.model_path}. Run ./setup.sh."
             )
         self.ready = True
 

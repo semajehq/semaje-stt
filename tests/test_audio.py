@@ -6,8 +6,8 @@ import wave
 import numpy as np
 import pytest
 
-from services.stt import audio
-from services.stt.audio import (
+from semaje_stt import audio
+from semaje_stt.audio import (
     AudioError, AudioTooLong, NoAudioStream, UndecodableAudio,
     build_normalize_args, channel_filter, parse_probe, split_on_silence,
 )

@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# semaje STT service on NVIDIA GPUs (CUDA 12.6 wheels, x86-64). Both engines use the GPU.
+# semaje-stt on NVIDIA GPUs (CUDA 12.6 wheels, x86-64). Both engines use the GPU.
 # Builder compiles wheels (kenlm has none); the runtime image carries no compiler.
 
 FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04 AS base
@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential cmake python3.11-dev zlib1g-dev libbz2-dev liblzma-dev \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
-COPY services/stt/requirements*.txt ./
+COPY requirements*.txt ./
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip wheel \
   && pip wheel -w /wheels \
@@ -26,16 +26,11 @@ FROM base
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg libsndfile1 \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY services/stt/requirements*.txt services/stt/
 RUN --mount=type=bind,from=wheels,source=/wheels,target=/wheels \
-    pip install --no-cache-dir --no-index --find-links /wheels \
-      -r services/stt/requirements.txt -r services/stt/requirements-omnilingual.txt
+    pip install --no-cache-dir --no-index --find-links /wheels /wheels/*.whl
 
-COPY packages/__init__.py packages/__init__.py
-COPY packages/languages/ packages/languages/
-COPY services/stt/ services/stt/
-RUN touch services/__init__.py \
-  && useradd --system --uid 10001 semaje && mkdir -p /models && chown semaje /models
+COPY semaje_stt/ semaje_stt/
+RUN useradd --system --uid 10001 semaje && mkdir -p /models && chown semaje /models
 USER semaje
 
 ENV STT_DEVICE=cuda \
@@ -53,4 +48,4 @@ VOLUME /models
 EXPOSE 8011
 HEALTHCHECK --interval=15s --timeout=5s --start-period=900s --retries=5 \
   CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8011/health/ready', timeout=3).status == 200 else 1)"
-CMD ["python", "-m", "services.stt.app"]
+CMD ["python", "-m", "semaje_stt.app"]

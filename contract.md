@@ -1,8 +1,8 @@
 # STT Service — Contract (v2)
 
 Open-source speech-to-text for any audio format in 1,600+ languages. The only
-component that runs a speech-recognition model. Everything else calls this HTTP
-contract through `services/stt/client/index.ts`.
+component that runs a speech-recognition model. The semaje platform calls this contract
+through its STT client (`services/speech/stt-client.ts` in semajehq/semaje).
 
 Base URL: `STT_URL` (default `http://localhost:8011`). Optional auth: when
 `STT_API_TOKEN` is set, every route except `/health` and `/health/live` requires

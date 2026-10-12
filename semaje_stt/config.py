@@ -34,10 +34,10 @@ DEVICE = _env("STT_DEVICE", "cpu", "WHISPER_DEVICE")                    # cpu | 
 COMPUTE_TYPE = _env("STT_COMPUTE_TYPE", "int8", "WHISPER_COMPUTE_TYPE")  # int8 | float16 | float32
 
 WHISPER_CPP_BIN = _env(
-    "WHISPER_CPP_BIN", str(HERE / "vendor" / "whisper.cpp" / "build" / "bin" / "whisper-cli"),
+    "WHISPER_CPP_BIN", str(HERE.parent / "vendor" / "whisper.cpp" / "build" / "bin" / "whisper-cli"),
 )
 WHISPER_CPP_MODEL = _env(
-    "WHISPER_CPP_MODEL", str(HERE / "vendor" / "whisper.cpp" / "models" / f"ggml-{MODEL}.bin"),
+    "WHISPER_CPP_MODEL", str(HERE.parent / "vendor" / "whisper.cpp" / "models" / f"ggml-{MODEL}.bin"),
 )
 WHISPER_CPP_THREADS = _env("WHISPER_CPP_THREADS", "")
 
