@@ -52,6 +52,32 @@
       "secondsPerClip": 1.51,
       "thresholdCer": 0.13,
       "passed": true
+    },
+    {
+      "lang": "kik",
+      "run": "omni-llm-300m",
+      "servedBy": "omnilingual:omniASR_LLM_300M_v2",
+      "clips": 40,
+      "misalignedDropped": 58,
+      "wer": 0.8395,
+      "cer": 0.2384,
+      "worstSpeakerCer": 0.3195,
+      "secondsPerClip": 88.35,
+      "thresholdCer": null,
+      "passed": true
+    },
+    {
+      "lang": "luo",
+      "run": "omni-llm-300m",
+      "servedBy": "omnilingual:omniASR_LLM_300M_v2",
+      "clips": 40,
+      "misalignedDropped": 27,
+      "wer": 0.3193,
+      "cer": 0.0801,
+      "worstSpeakerCer": 0.1555,
+      "secondsPerClip": 40.21,
+      "thresholdCer": null,
+      "passed": true
     }
   ]
 }

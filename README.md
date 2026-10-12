@@ -52,10 +52,21 @@ Measured on Google WAXAL test recordings (8 speakers per language; rows whose
 audio does not match the script excluded, including one Kikuyu speaker who
 paraphrases instead of reading), identical 40 clips per engine:
 
-| Language | Omnilingual CTC-300M (default) | MMS-1b-all + adapter (opt-in) |
-|---|---|---|
-| Kikuyu | CER 21.4%, WER 86.1% | **CER 19.1%, WER 57.1%** |
-| Dholuo | CER 10.7%, WER 47.6% | **CER 10.0%, WER 37.3%** |
+| Language | Omnilingual CTC-300M (default) | Omnilingual LLM-300M | MMS-1b-all + adapter (opt-in, non-commercial) |
+|---|---|---|---|
+| Kikuyu | CER 21.4%, WER 86.1% | CER 23.8%, WER 84.0% | **CER 19.1%, WER 57.1%** |
+| Dholuo | CER 10.7%, WER 47.6% | **CER 8.0%, WER 31.9%** | CER 10.0%, WER 37.3% |
+
+Which to run:
+
+- **Dholuo**: the open-licensed LLM card is best. Set
+  `STT_OMNILINGUAL_MODEL=omniASR_LLM_300M_v2` (6.5 GB; ~40 s per 10 s clip on a
+  laptop CPU in bfloat16, real time on a GPU) and keep `luo` out of
+  `STT_MMS_LANGUAGES`.
+- **Kikuyu**: the LLM card does not help; MMS-1b-all is clearly better on words
+  but is non-commercial (`STT_ALLOW_NONCOMMERCIAL=true`, `STT_MMS_LANGUAGES=kik`).
+- Default (CPU, CTC-300M): if you accept the non-commercial license,
+  `STT_MMS_LANGUAGES=kik,luo` is best for both.
 
 On a larger 100-clip Dholuo sample the two are even on characters (Omnilingual
 10.4%, MMS 11.4% CER) while MMS stays ahead on words (WER 41.0% vs 48.1%).
