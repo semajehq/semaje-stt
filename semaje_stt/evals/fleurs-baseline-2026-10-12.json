@@ -1,0 +1,175 @@
+{
+  "dataset": "google/fleurs test",
+  "clipsPerLanguage": 5,
+  "results": [
+    {
+      "fleurs": "en_us",
+      "language": "en",
+      "engine": "auto",
+      "served_by": [
+        "whisper:base"
+      ],
+      "clips": 5,
+      "wer": 0.0793,
+      "cer": 0.0276,
+      "rtf": 0.201,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "en_us",
+      "language": "en",
+      "engine": "whisper",
+      "served_by": [
+        "whisper:base"
+      ],
+      "clips": 5,
+      "wer": 0.0793,
+      "cer": 0.0276,
+      "rtf": 0.104,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "sw_ke",
+      "language": "sw",
+      "engine": "auto",
+      "served_by": [
+        "omnilingual:omniASR_CTC_300M_v2"
+      ],
+      "clips": 5,
+      "wer": 0.2241,
+      "cer": 0.0487,
+      "rtf": 0.086,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "sw_ke",
+      "language": "sw",
+      "engine": "whisper",
+      "served_by": [
+        "whisper:base"
+      ],
+      "clips": 5,
+      "wer": 0.9782,
+      "cer": 0.2431,
+      "rtf": 0.252,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "yo_ng",
+      "language": "yo",
+      "engine": "auto",
+      "served_by": [
+        "omnilingual:omniASR_CTC_300M_v2"
+      ],
+      "clips": 5,
+      "wer": 0.6901,
+      "cer": 0.2605,
+      "rtf": 0.107,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "yo_ng",
+      "language": "yo",
+      "engine": "whisper",
+      "served_by": [
+        "whisper:base"
+      ],
+      "clips": 5,
+      "wer": 0.9492,
+      "cer": 0.5147,
+      "rtf": 0.169,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "am_et",
+      "language": "am",
+      "engine": "auto",
+      "served_by": [
+        "omnilingual:omniASR_CTC_300M_v2"
+      ],
+      "clips": 5,
+      "wer": 0.3526,
+      "cer": 0.1158,
+      "rtf": 0.097,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "am_et",
+      "language": "am",
+      "engine": "whisper",
+      "served_by": [
+        "whisper:base"
+      ],
+      "clips": 5,
+      "wer": 1.2267,
+      "cer": 1.4815,
+      "rtf": 0.559,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "luo_ke",
+      "language": "luo",
+      "engine": "auto",
+      "served_by": [
+        "omnilingual:omniASR_CTC_300M_v2"
+      ],
+      "clips": 5,
+      "wer": 0.4033,
+      "cer": 0.0693,
+      "rtf": 0.235,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "luo_ke",
+      "language": "luo",
+      "engine": "whisper",
+      "served_by": [
+        "omnilingual:omniASR_CTC_300M_v2"
+      ],
+      "clips": 5,
+      "wer": 0.4033,
+      "cer": 0.0693,
+      "rtf": 0.165,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "lg_ug",
+      "language": "lg",
+      "engine": "auto",
+      "served_by": [
+        "omnilingual:omniASR_CTC_300M_v2"
+      ],
+      "clips": 5,
+      "wer": 0.4645,
+      "cer": 0.0494,
+      "rtf": 0.151,
+      "threshold_cer": null,
+      "passed": true
+    },
+    {
+      "fleurs": "lg_ug",
+      "language": "lg",
+      "engine": "whisper",
+      "served_by": [
+        "omnilingual:omniASR_CTC_300M_v2"
+      ],
+      "clips": 5,
+      "wer": 0.4645,
+      "cer": 0.0494,
+      "rtf": 0.203,
+      "threshold_cer": null,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

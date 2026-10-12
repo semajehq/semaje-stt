@@ -1,0 +1,6 @@
+# Meta Omnilingual ASR (Apache-2.0): 1,600+ languages. Needs libsndfile
+# (apt install libsndfile1 / brew install libsndfile).
+omnilingual-asr==0.2.0
+# omnilingual-asr pins torch==2.8.0 but leaves these open; unpinned resolves break:
+torchaudio==2.8.0              # torchaudio 2.9+ fails to load against torch 2.8 (missing _torch_library_impl)
+pyarrow<21                     # pyarrow 21+ requires NumPy 2; fairseq2 holds NumPy at 1.x

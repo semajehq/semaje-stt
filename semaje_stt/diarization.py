@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import os
-from .backends.base import Segment
+from .engines.base import Segment
 
 _pipeline = None
 

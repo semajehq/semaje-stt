@@ -1,24 +1,56 @@
-FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+# syntax=docker/dockerfile:1
+# semaje STT service on NVIDIA GPUs (CUDA 12.6 wheels, x86-64). Both engines use the GPU.
+# Builder compiles wheels (kenlm has none); the runtime image carries no compiler.
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHONUNBUFFERED=1 \
-    WHISPER_BACKEND=faster-whisper \
-    WHISPER_DEVICE=cuda \
-    WHISPER_COMPUTE_TYPE=float16 \
-    WHISPER_MODEL=medium \
-    WHISPER_PORT=8011 \
-    HF_HOME=/models
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04 AS base
+ENV DEBIAN_FRONTEND=noninteractive PYTHONUNBUFFERED=1 \
+    PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=10 PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN apt-get update && apt-get install -y --no-install-recommends python3.11 python3.11-venv \
+  && rm -rf /var/lib/apt/lists/* && python3.11 -m venv /opt/venv
+ENV PATH=/opt/venv/bin:$PATH
 
+FROM base AS wheels
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      ffmpeg python3 python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+      build-essential cmake python3.11-dev zlib1g-dev libbz2-dev liblzma-dev \
+  && rm -rf /var/lib/apt/lists/*
+WORKDIR /build
+COPY services/stt/requirements*.txt ./
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip wheel \
+  && pip wheel -w /wheels \
+       --extra-index-url https://download.pytorch.org/whl/cu126 \
+       --extra-index-url https://fair.pkg.atmeta.com/fairseq2/whl/pt2.8.0/cu126 \
+       -r requirements.txt -r requirements-omnilingual.txt
 
+FROM base
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg libsndfile1 \
+  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY services/whisper/requirements.txt services/whisper/requirements.txt
-RUN python3 -m pip install --no-cache-dir -r services/whisper/requirements.txt
-COPY services/whisper/ services/whisper/
-RUN touch services/__init__.py
+COPY services/stt/requirements*.txt services/stt/
+RUN --mount=type=bind,from=wheels,source=/wheels,target=/wheels \
+    pip install --no-cache-dir --no-index --find-links /wheels \
+      -r services/stt/requirements.txt -r services/stt/requirements-omnilingual.txt
+
+COPY packages/__init__.py packages/__init__.py
+COPY packages/languages/ packages/languages/
+COPY services/stt/ services/stt/
+RUN touch services/__init__.py \
+  && useradd --system --uid 10001 semaje && mkdir -p /models && chown semaje /models
+USER semaje
+
+ENV STT_DEVICE=cuda \
+    STT_COMPUTE_TYPE=float16 \
+    STT_WHISPER_MODEL=large-v3-turbo \
+    STT_OMNILINGUAL_MODEL=omniASR_LLM_1B_v2 \
+    STT_OMNILINGUAL_DEVICE=cuda \
+    STT_MAX_CONCURRENCY=2 \
+    STT_PORT=8011 \
+    STT_MODEL_DIR=/models \
+    HF_HOME=/models/hf \
+    STT_WARMUP=true
 
 VOLUME /models
 EXPOSE 8011
-CMD ["python3", "-m", "services.whisper.app"]
+HEALTHCHECK --interval=15s --timeout=5s --start-period=900s --retries=5 \
+  CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8011/health/ready', timeout=3).status == 200 else 1)"
+CMD ["python", "-m", "services.stt.app"]

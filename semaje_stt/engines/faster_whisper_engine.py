@@ -1,12 +1,16 @@
-"""faster-whisper backend — CTranslate2, pure Python, no torch."""
+"""faster-whisper engine — CTranslate2 Whisper (MIT), CPU/CUDA, no torch."""
 import math
-from .base import Backend, TranscriptResult, Segment
+
+from .base import Engine, TranscriptResult, Segment, AudioInput
 from .. import config
 from ..models import download_model, model_path, is_installed
 
 
-class FasterWhisperBackend(Backend):
+class FasterWhisperEngine(Engine):
     name = "faster-whisper"
+    family = "whisper"
+    supports_translate = True
+    supports_word_timestamps = True
 
     def __init__(self, model_name=None):
         self.model_name = model_name or config.MODEL
@@ -16,31 +20,38 @@ class FasterWhisperBackend(Backend):
     def load(self) -> None:
         if self._model is not None:
             return
-        from faster_whisper import WhisperModel  # imported lazily so gate tests don't need it
+        from faster_whisper import WhisperModel  # lazy: gate tests don't load models
         if not is_installed(self.name, self.model_name):
             download_model(self.name, self.model_name)
-        source = str(model_path(self.name, self.model_name)) \
-            if is_installed(self.name, self.model_name) else self.model_name
         self._model = WhisperModel(
-            source,
+            str(model_path(self.name, self.model_name)),
             device=config.DEVICE,
             compute_type=config.COMPUTE_TYPE,
         )
         self.ready = True
 
-    def transcribe(self, audio_path: str, language: str | None, task: str) -> TranscriptResult:
+    def detect_language(self, audio: AudioInput):
+        self.load()
+        # Vote over up to 3 speech windows so a noisy intro can't decide alone.
+        language, probability, _ = self._model.detect_language(
+            audio.samples, vad_filter=True, language_detection_segments=3,
+        )
+        return language, float(probability or 0.0)
+
+    def transcribe(self, audio: AudioInput, language, task) -> TranscriptResult:
         self.load()
         segments_iter, info = self._model.transcribe(
-            audio_path,
+            audio.samples,
             language=language or None,
             task=task,
             vad_filter=True,  # skip long silences, cuts hallucinated filler
             word_timestamps=True,
         )
-        segments = []
-        parts = []
+        segments, parts = [], []
         for s in segments_iter:
             txt = s.text.strip()
+            if not txt:
+                continue
             confidence = max(0.0, min(1.0, math.exp(float(s.avg_logprob or -10))))
             words = [
                 {

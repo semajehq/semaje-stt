@@ -1,0 +1,10 @@
+{
+  "_comment": "Max CER per FLEURS config and engine policy. Baseline 2026-10-12: Whisper base int8 + omniASR_CTC_300M_v2, CPU, 5 clips. Margins cover 5-clip variance. Tighten when you upgrade models.",
+  "en_us": { "auto": 0.06, "whisper": 0.06 },
+  "fr_fr": { "auto": 0.10 },
+  "sw_ke": { "auto": 0.08 },
+  "yo_ng": { "auto": 0.32 },
+  "am_et": { "auto": 0.16 },
+  "luo_ke": { "auto": 0.10 },
+  "lg_ug": { "auto": 0.08 }
+}

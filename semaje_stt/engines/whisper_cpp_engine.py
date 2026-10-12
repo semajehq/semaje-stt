@@ -1,14 +1,14 @@
-"""whisper.cpp backend — shells out to the compiled whisper-cli binary.
+"""whisper.cpp engine (MIT) — shells out to the compiled whisper-cli binary.
 
-whisper.cpp only accepts 16 kHz mono WAV, so we transcode with ffmpeg first.
-Output is parsed from whisper-cli's `-oj` JSON file.
+The service already hands every engine a 16 kHz mono WAV, which is exactly what
+whisper-cli needs. Output is parsed from whisper-cli's `-oj` JSON file.
 """
 import json
 import os
 import subprocess
 import tempfile
 
-from .base import Backend, TranscriptResult, Segment
+from .base import Engine, TranscriptResult, Segment, AudioInput
 from .. import config
 from ..models import model_path
 
@@ -41,8 +41,10 @@ def parse_whisper_cpp_json(data: dict, model_name: str) -> TranscriptResult:
     )
 
 
-class WhisperCppBackend(Backend):
+class WhisperCppEngine(Engine):
     name = "whisper.cpp"
+    family = "whisper"
+    supports_translate = True
 
     def __init__(self, model_name=None):
         self.bin = config.WHISPER_CPP_BIN
@@ -54,32 +56,22 @@ class WhisperCppBackend(Backend):
     def load(self) -> None:
         if not os.path.exists(self.bin):
             raise RuntimeError(
-                f"whisper.cpp binary not found at {self.bin}. Run services/whisper/setup.sh."
+                f"whisper.cpp binary not found at {self.bin}. Run services/stt/setup.sh."
             )
         if not os.path.exists(self.model_path):
             raise RuntimeError(
-                f"whisper.cpp model not found at {self.model_path}. Run services/whisper/setup.sh."
+                f"whisper.cpp model not found at {self.model_path}. Run services/stt/setup.sh."
             )
         self.ready = True
 
-    def _to_wav16k(self, audio_path: str, out_path: str) -> None:
-        subprocess.run(
-            ["ffmpeg", "-nostdin", "-y", "-i", audio_path,
-             "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", out_path],
-            check=True, capture_output=True,
-        )
-
-    def transcribe(self, audio_path: str, language: str | None, task: str) -> TranscriptResult:
+    def transcribe(self, audio: AudioInput, language, task) -> TranscriptResult:
         self.load()
         with tempfile.TemporaryDirectory() as tmp:
-            wav = os.path.join(tmp, "audio.wav")
-            self._to_wav16k(audio_path, wav)
-
             out_prefix = os.path.join(tmp, "out")
             cmd = [
                 self.bin,
                 "-m", self.model_path,
-                "-f", wav,
+                "-f", audio.wav_path,
                 "-oj",                  # JSON output → out.json
                 "-of", out_prefix,
                 "-l", language or "auto",
@@ -89,9 +81,11 @@ class WhisperCppBackend(Backend):
             if config.WHISPER_CPP_THREADS:
                 cmd += ["-t", config.WHISPER_CPP_THREADS]
 
-            subprocess.run(cmd, check=True, capture_output=True)
+            subprocess.run(cmd, check=True, capture_output=True, timeout=config.FFMPEG_TIMEOUT_SEC)
 
             with open(out_prefix + ".json", "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-        return parse_whisper_cpp_json(data, self.model)
+        result = parse_whisper_cpp_json(data, self.model)
+        result.duration = max(result.duration, audio.duration)
+        return result
